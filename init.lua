@@ -52,7 +52,7 @@ local enter = ya.sync(function()
   local h = cx.active.current.hovered
   if h then
     if h.cha.is_dir then
-		  ya.manager_emit("enter", {})
+      ya.manager_emit("enter", {})
     else
       if get_state("global", "smart_enter") then
         ya.manager_emit("open", { hovered = true })
@@ -65,13 +65,8 @@ end)
 
 local function run_command(cmd, args)
   local cwd = current_dir()
-  local child, cmd_err = Command(cmd)
-    :args(args)
-    :cwd(cwd)
-    :stdin(Command.INHERIT)
-    :stdout(Command.PIPED)
-    :stderr(Command.INHERIT)
-    :spawn()
+  local child, cmd_err =
+    Command(cmd):args(args):cwd(cwd):stdin(Command.INHERIT):stdout(Command.PIPED):stderr(Command.INHERIT):spawn()
 
   if not child then
     error("Spawn `fuse-archive` failed with error code %s", cmd_err)
@@ -97,9 +92,29 @@ local valid_extension = ya.sync(function()
       return false
     end
     local valid_extensions = {
-      "zip", "gz", "bz2", "tar", "tgz", "tbz2", "txz", "xz", "tzs",
-      "zst", "iso", "rar", "7z", "cpio", "lz", "lzma", "shar", "a",
-      "ar", "apk", "jar", "xpi", "cab"
+      "zip",
+      "gz",
+      "bz2",
+      "tar",
+      "tgz",
+      "tbz2",
+      "txz",
+      "xz",
+      "tzs",
+      "zst",
+      "iso",
+      "rar",
+      "7z",
+      "cpio",
+      "lz",
+      "lzma",
+      "shar",
+      "a",
+      "ar",
+      "apk",
+      "jar",
+      "xpi",
+      "cab",
     }
     local filename = tostring(h.url)
     for _, ext in ipairs(valid_extensions) do
@@ -160,6 +175,7 @@ return {
       return
     end
 
+    -- Mount Action
     if action == "mount" then
       local file = current_file()
       if file == nil then
@@ -174,7 +190,8 @@ return {
       if not tmp_file_path then
         return
       end
-      local ret_code = run_command(shell, { "-c", "fuse-archive " .. ya.quote("./" .. file) .." " .. ya.quote(tmp_file_path) })
+      local ret_code =
+        run_command(shell, { "-c", "fuse-archive " .. ya.quote("./" .. file) .. " " .. ya.quote(tmp_file_path) })
       if ret_code ~= 0 then
         os.remove(tmp_file_path)
         error(" Unable to mount %s", file)
@@ -186,6 +203,7 @@ return {
       ya.manager_emit("enter", {})
     end
 
+    -- Unmount Action
     if action == "unmount" then
       if not is_mount_point() then
         ya.manager_emit("leave", {})
@@ -204,6 +222,17 @@ return {
       if not deleted then
         error("Cannot delete tmp file %s", tmp_file)
       end
+      return
+    end
+
+    -- Tab Create Action
+    if action == "tab" then
+      if not is_mount_point() then
+        ya.manager_emit("tab_create --current", {})
+        return
+      end
+      local file = current_dir_name()
+      ya.manager_emit("tab_create", { get_state(file, "cwd") })
       return
     end
   end,
