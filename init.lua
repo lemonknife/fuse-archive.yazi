@@ -228,7 +228,7 @@ return {
     -- Tab Create Action
     if action == "tab" then
       if not is_mount_point() then
-        ya.manager_emit("tab_create --current", {})
+        ya.manager_emit("tab_create", { current = true })
         return
       end
       local file = current_dir_name()
