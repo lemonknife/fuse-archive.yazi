@@ -93,34 +93,59 @@ local valid_extension = ya.sync(function()
 		if h.cha.is_dir then
 			return false
 		end
-		local valid_extensions = {
-			"zip",
-			"gz",
-			"bz2",
-			"tar",
-			"tgz",
-			"tbz2",
-			"txz",
-			"xz",
-			"tzs",
-			"zst",
-			"iso",
-			"rar",
-			"7z",
-			"cpio",
-			"lz",
-			"lzma",
-			"shar",
-			"a",
-			"ar",
-			"apk",
-			"jar",
-			"xpi",
-			"cab",
+		-- NOTE: this list is still WIP
+		local valid_mime_types = {
+			"application/tar",
+			"application/gzip",
+			-- "application/posix-tar",
+			-- "application/gnu-tar",
+			-- "application/gtar",
+			-- "application/solaris-tar",
+			-- "application/pax",
+
+			"application/cpio",
+			"application/iso9660-image",
+			"application/zip",
+			"application/zipx",
+
+			"application/archive",
+
+			"application/mtree",
+
+			"application/7z-compressed",
+
+			"application/vnd.ms-cab-compressed",
+
+			"application/lha",
+			"application/lzh",
+
+			"application/rar",
+			"application/rar5",
+
+			"application/xar",
+
+			"application/bzip2",
+			"application/compress",
+			"application/lzma",
+			"application/lzip",
+			"application/xz",
+			"application/lz4",
+			"application/lzop",
+			"application/zstd",
 		}
-		local filename = tostring(h.url)
-		for _, ext in ipairs(valid_extensions) do
-			if filename:find("%." .. ext .. "$") then
+
+		local mime_type = h:mime()
+		if get_state("global", "mime_type_debug") then
+			ya.notify({
+				title = "fuse-archive",
+				content = "[Debug]Filetype: " .. h:mime(),
+				timeout = 1,
+				level = "warn",
+			})
+		end
+
+		for _, valid_mime in ipairs(valid_mime_types) do
+			if mime_type == valid_mime then
 				return true
 			end
 		end
@@ -167,6 +192,11 @@ local function setup(_, opts)
 		set_state("global", "smart_enter", true)
 	else
 		set_state("global", "smart_enter", false)
+	end
+	if opts and opts.mime_type_debug then
+		set_state("global", "mime_type_debug", true)
+	else
+		set_state("global", "mime_type_debug", false)
 	end
 end
 
